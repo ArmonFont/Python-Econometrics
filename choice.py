@@ -1,7 +1,7 @@
 import sys
 
 # risk neutral or risk averse
-q1 = input("Your given $100 and you have the option to keep it or bet it for $200. \n"
+q1 = input("Youre given $100 and you have the option to keep it or bet it for $200. \n"
            "There is a 50% chance of you losing it. Enter 'keep or 'bet' for what you would choose.")
 
 if q1 == "keep":
@@ -17,7 +17,7 @@ else:
 print(x)
 
 # risk loving or risk neutral
-q2 = input("Imagine that you recived 1 million dollars from a rich uncle \n"
+q2 = input("Imagine that you received 1 million dollars from a rich uncle \n"
            "You have two choices: \n"
            "1. Enter a contest to turn the 1 million to 5 million \n"
            "2. Keep the 1 million in a hedge fund that guarentees you a 50k return \n"
