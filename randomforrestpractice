@@ -1,0 +1,100 @@
+#used only for practice
+
+##### added line to ensure plots are showing
+%matplotlib inline
+#####
+
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('churn_ibm.csv')
+df.head()
+
+y = df['Churn']
+X = df.drop(['Churn','customerID'],axis=1)
+
+for column in X.columns:
+    if X[column].dtype == np.object:
+        X = pd.concat([X,pd.get_dummies(X[column], prefix=column, drop_first=True)],axis=1).drop([column],axis=1)
+        
+y = pd.get_dummies(y, prefix='churn', drop_first=True)
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, roc_auc_score
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
+
+rf = RandomForestClassifier(n_estimators=20)
+
+# Some algorithms need a transformed version of the dependent variable
+# To this purpose, the data is reshaped using ravel()
+rf.fit(X_train,y_train.values.ravel())
+prediction = rf.predict(X_test)
+prediction_proba = rf.predict_proba(X_test)
+
+print('Accuracy:', accuracy_score(y_test,prediction))
+print('AUC:',roc_auc_score(y_test,prediction_proba[:,1]))
+
+rf2 = RandomForestClassifier(n_estimators=100)
+rf2.fit(X_train,y_train.values.ravel())
+prediction = rf2.predict(X_test)
+prediction_proba = rf2.predict_proba(X_test)
+
+print('Accuracy:', accuracy_score(y_test,prediction))
+print('AUC:',roc_auc_score(y_test,prediction_proba[:,1]))
+
+
+from sklearn.ensemble import AdaBoostClassifier
+
+ada = AdaBoostClassifier()
+ada.fit(X_train,y_train.values.ravel())
+prediction = ada.predict(X_test)
+prediction_proba = ada.predict_proba(X_test)
+
+print('Accuracy:', accuracy_score(y_test,prediction))
+print('AUC:',roc_auc_score(y_test,prediction_proba[:,1]))
+
+
+print(ada)
+
+
+ada2 = AdaBoostClassifier(n_estimators=100)
+ada2.fit(X_train,y_train.values.ravel())
+prediction = ada2.predict(X_test)
+prediction_proba = ada2.predict_proba(X_test)
+
+print('Accuracy:', accuracy_score(y_test,prediction))
+print('AUC:',roc_auc_score(y_test,prediction_proba[:,1]))
+
+
+from sklearn.model_selection import cross_validate, cross_val_predict
+from sklearn.model_selection import GridSearchCV
+
+# First we create a dictionary containing the parameters we want to test
+# We include the values we want to test as lists 
+parameters = {'min_samples_leaf':[1,5],'max_depth':[None,10]}
+
+# Then, we bring together a classifier, the parameters, and set the number of folds for the CV
+grid_search = GridSearchCV(RandomForestClassifier(n_estimators=20), parameters, cv=10)
+grid_search.fit(X_train, y_train.values.ravel())
+
+# The best predictor will be used for the prediction
+prediction = grid_search.predict(X_test)
+prediction_proba = grid_search.predict_proba(X_test)
+    
+best_classifier = grid_search.best_estimator_
+
+print('Best classifier:',best_classifier)
+print('Accuracy:', accuracy_score(y_test,prediction))
+print('AUC:',roc_auc_score(y_test,prediction_proba[:,1]))
+
+# Random forest - 5 most important features
+for c, column in enumerate(X_test.columns):
+    if rf.feature_importances_[c] in sorted(rf.feature_importances_)[-5:]:
+        print('Variable',column,rf.feature_importances_[c])
+
+# AdaBoost - 5 most important features
+for c, column in enumerate(X_test.columns):
+    if ada.feature_importances_[c] in sorted(ada.feature_importances_)[-5:]:
+        print('Variable',column,ada.feature_importances_[c])
